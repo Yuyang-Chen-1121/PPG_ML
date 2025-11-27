@@ -1,0 +1,9 @@
+# @package _global_
+dataset:
+  name: "WESAD"
+  root: "./data/raw/WESAD"
+  fs: 32
+  window: 256
+  stride: 64        # WESAD 数据量较小，步长可加大
+  num_workers: 2
+  modality: "wrist" # 'wrist' or 'chest'

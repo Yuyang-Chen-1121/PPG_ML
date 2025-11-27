@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - belief_ppg
+  - tiny_ppg
+
+model_type: "AABN"
+fusion:
+  gate_dim: 64
+  uncertainty_threshold: 0.8

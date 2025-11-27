@@ -1,0 +1,38 @@
+# @package _global_
+
+defaults:
+  - _self_
+
+experiment_name: "ppg_fusion_v1"
+
+# 1. 数据集参数
+dataset:
+  name: "PPG-DaLiA"
+  data_root: "./data/raw"
+  fs: 32            # 采样率 (Tiny-PPG和Belief-PPG通常下采样到32Hz或64Hz)
+  window_size: 256  # 8秒窗口 @ 32Hz (32 * 8 = 256)
+  stride: 32        # 滑动窗口步长
+  batch_size: 64
+  num_workers: 4
+
+# 2. 预处理参数
+preprocessing:
+  stft:
+    n_fft: 128      # 频域分支的FFT点数
+    hop_length: 32  # 对应时间分辨率
+  filter:
+    low_cut: 0.5    # Hz
+    high_cut: 4.0   # Hz
+
+# 3. 训练参数
+training:
+  epochs: 100
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  grad_clip: 1.0    # 梯度裁剪，防止LSTM爆炸
+  save_dir: "./checkpoints"
+  
+# 4. 损失函数权重
+loss_weights:
+  segmentation: 1.0  # 伪影检测的权重
+  distribution: 5.0  # 心率分布预测的权重 (通常KL散度数值较小，需要加权)

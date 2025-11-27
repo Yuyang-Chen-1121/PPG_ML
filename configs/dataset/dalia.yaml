@@ -1,0 +1,9 @@
+# @package _global_
+dataset:
+  name: "PPG-DaLiA"
+  root: "./data/raw/PPG_DaLiA"
+  fs: 32            # 目标采样率
+  window: 256       # 窗口长度 (points)
+  stride: 32        # 滑动步长
+  num_workers: 4
+  n_classes: 180    # 心率分类数 (30-210 BPM)
