@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class BeliefCNN(nn.Module):
-    def __init__(self, time_channels=1, freq_channels=2, bottleneck_dim=48, output_dim=128):
+    def __init__(self, time_channels=1, freq_channels=1, bottleneck_dim=48, output_dim=128):
         super().__init__()
         self.output_dim = output_dim # [修复] 显式记录输出维度，供 Fusion 模块读取
         

@@ -21,8 +21,9 @@ def plot_uncertainty_heatmap(probs, true_hr, bins, title="HR Probability Distrib
     plt.figure(figsize=(12, 6))
     
     # 绘制热图
+    T = probs.shape[0]
     plt.imshow(probs.T, aspect='auto', origin='lower', 
-               extent=[0, probs.shape, bins, bins[-1]], 
+               extent=[0, T, bins[0], bins[-1]], 
                cmap='viridis', interpolation='nearest')
     
     # 叠加真实心率曲线

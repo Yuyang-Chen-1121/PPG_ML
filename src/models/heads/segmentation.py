@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from..layers import ASPP
 
 class SegmentationHead(nn.Module):
-    def __init__(self, in_channels, num_classes=2):
+    def __init__(self, in_channels, num_classes=1):
         super().__init__()
         # 接收 Encoder 的特征，通过 ASPP 增强多尺度能力
         self.aspp = ASPP(in_channels, out_channels=64)
