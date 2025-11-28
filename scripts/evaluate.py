@@ -31,7 +31,7 @@ def evaluate(cfg: DictConfig):
     test_dataset = PPGDataset(data_path=None, config=cfg, mode='test')
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
     
-    mae_list =
+    mae_list =[]
     
     # 3. 推理循环
     print("Starting evaluation...")
