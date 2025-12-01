@@ -1,0 +1,8 @@
+# @package _global_
+training:
+  batch_size: 4
+  epochs: 2
+  learning_rate: 1e-4
+  log_interval: 1
+  save_dir: "./checkpoints/debug"
+  use_mock_data: True

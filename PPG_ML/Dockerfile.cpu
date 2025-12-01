@@ -1,0 +1,18 @@
+# ---- Apple Silicon 使用 CPU 版本 PyTorch ----
+FROM pytorch/pytorch:2.1.2-cpu
+
+WORKDIR /workspace
+
+RUN apt-get update && apt-get install -y \
+    git \
+    vim \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . /workspace
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+CMD ["/bin/bash"]

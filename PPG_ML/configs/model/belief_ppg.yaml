@@ -1,0 +1,7 @@
+# @package _global_
+model_args:
+  belief_ppg:
+    time_channels: 1
+    freq_channels: 2  # PPG spec + ACC spec
+    bottleneck_dim: 48
+    output_dim: 128

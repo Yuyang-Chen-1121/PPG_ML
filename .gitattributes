@@ -1,0 +1,4 @@
+stft.npy filter=lfs diff=lfs merge=lfs -text
+mask.npy filter=lfs diff=lfs merge=lfs -text
+ppg.npy filter=lfs diff=lfs merge=lfs -text
+mel.npy filter=lfs diff=lfs merge=lfs -text

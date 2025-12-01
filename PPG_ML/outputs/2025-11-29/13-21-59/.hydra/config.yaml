@@ -1,0 +1,27 @@
+data:
+  dalia_raw_dir: /content/drive/MyDrive/PPG_ML/data/raw/dalia
+  dalia_out_dir: /content/drive/MyDrive/PPG_ML/data/processed/dalia
+preprocessing:
+  fs_ppg: 64
+  fs_acc: 32
+  window_size: 512
+  window_stride: 256
+  acc_ma_window: 5
+  acc_z_thresh: 2.5
+  stft:
+    enabled: true
+    n_fft: 128
+    hop_length: 32
+  mel:
+    enabled: true
+    n_fft: 128
+    hop_length: 32
+    n_mels: 64
+output:
+  save_ppg: true
+  save_stft: true
+  save_mel: true
+  save_mask: true
+  save_hr: true
+system:
+  num_workers: 4

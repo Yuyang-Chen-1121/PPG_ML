@@ -1,0 +1,39 @@
+data:
+  dalia_raw_dir: "/content/drive/MyDrive/PPG_ML/data/raw/dalia"
+  dalia_out_dir: "/content/drive/MyDrive/PPG_ML/data/processed/dalia"
+
+preprocessing:
+  # -------- 采样率 --------
+  fs_ppg: 64    # Wrist BVP (PPG)
+  fs_acc: 32     # Wrist ACC
+
+  # -------- 窗口设置（PPG 采样域）--------
+  window_size: 256      # 256 点 = 4 秒 @64Hz
+  window_stride: 64    # 2 秒步长
+
+  # -------- ACC 伪影检测 --------
+  acc_ma_window: 5      # 移动平均窗口（秒）
+  acc_z_thresh: 2.5     # Z-score 阈值
+
+  # -------- STFT（Belief-PPG）--------
+  stft:
+    enabled: true
+    n_fft: 128          # 适配 64Hz
+    hop_length: 32
+
+  # -------- Mel 频谱（Tiny-PPG）--------
+  mel:
+    enabled: true
+    n_fft: 128
+    hop_length: 32
+    n_mels: 32
+
+output:
+  save_ppg: true
+  save_stft: true
+  save_mel: true
+  save_mask: true
+  save_hr: true
+
+system:
+  num_workers: 4

@@ -1,0 +1,5 @@
+# @package _global_
+model_args:
+  tiny_ppg:
+    in_channels: 1
+    base_filters: 32
