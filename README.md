@@ -1,6 +1,6 @@
 # TinyNet
 
-TinyNet is a hardware-oriented multi-task 1D CNN for **atrial fibrillation (AF) detection** and **heart-rate (HR) estimation** from unified temporal windows. The project is organized around one consistent pipeline: preprocessing, balanced split construction, staged (decoupled) training, and post-training INT8 export.
+TinyNet is a hardware-oriented multi-task deep learning neural network for **atrial fibrillation (AF) detection** and **heart-rate (HR) estimation** using PPG signals. The project supports computation acceleration for training and inference on Nvidia GPU (A100, L4, T4 are tested) and Apple M-series chip (M3 is tested).
 
 ## Model Architecture
 
