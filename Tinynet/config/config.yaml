@@ -1,77 +1,256 @@
-# =========================================================================
-# TinyNet V2.6.1 Configuration
-# =========================================================================
+# Author: Yuyang Chen
+# School: Zhejiang University
+# Last Modified: 2026.2.7
+# Description: Implementation module for config.yaml in TinyNet pipeline.
 
-model_config_path: "./config/config.yaml"
+# TinyNet CNN_Base V1.0 deployment/training configuration.
+# All tunable parameters are centralized here.
 
-train:
-  batch_size: 4096        # A100
-  learning_rate: 0.001   # 初始学习率
-  epochs: 50            # 训练轮数
-  checkpoint_dir: "./checkpoints/tinynet_v2.6.1" # 模型存档路径
-
-hardware:
-  input_alignment: 16      # 输入通道必须是16的倍数
-  softmax_limit: 128       # Softmax最大支持128个输入
-  max_pooling_kernel: 8    # 硬件支持的最大池化核大小
-  quantization_bit: 8      # INT8 量化
+paths:
+  # Root folder that contains preprocessed dataset folders.
+  processed_root: "../../data/processed"
+  # Optional split file with train/val/test ids or paths.
+  split_json: "./split_optimized.json"
+  # Checkpoint output directory.
+  checkpoints_dir: "./checkpoints"
+  # Plot output directory.
+  plots_dir: "./plots"
+  # INT8 export/evaluation root directory.
+  output_root: "./output"
+  # Raw dataset roots used by preprocessing scripts.
+  raw:
+    dalia: "../../data/raw/dalia"
+    bami: "../../data/raw/BAMI"
+    simband: "../../data/raw/UMMCSIMBAND"
+  # Preprocessed dataset output folders.
+  processed:
+    dalia: "../../data/processed/dalia"
+    bami: "../../data/processed/BAMI"
+    simband: "../../data/processed/UMMCSIMBAND"
 
 data:
-  input_length: 320        # 10秒 * 32Hz
-  sampling_rate: 32
+  # Input channel count must be divisible by 16 for hardware compliance.
+  input_channels: 16
+  # Input temporal length; keep within [1, 8192].
+  input_length: 320
+  # Simband uses PPG-only; zero out ACC and padding channels at load time.
+  simband_ppg_only: true
+  # Target sampling frequency after preprocessing.
+  sampling_rate_hz: 32
+  # Window length for slicing raw signals.
+  window_seconds: 10
+  # Sliding step for windows.
+  window_step_seconds: 2
 
-  # Ch0: PPG, Ch1: ACC模长, Ch4: Delta, Ch5: Env, ch2-3&ch6-15:设为0，可添加
-  input_channels: 16       
+preprocessing:
+  # Butterworth band-pass settings for PPG.
+  bandpass_low_hz: 0.5
+  bandpass_high_hz: 4.0
+  bandpass_order: 2
+  # Raw source sampling rates per dataset.
+  source_fs:
+    dalia: 64
+    bami: 50
+    simband: 50
+  # Hampel filter settings.
+  hampel_window_size: 7
+  hampel_threshold_std: 3.0
+  # Z-score epsilon to avoid divide-by-zero.
+  zscore_epsilon: 1.0e-6
+  # Apply z-score normalization after Hampel filtering.
+  enable_zscore: true
+
+signal_quality:
+  # Master switch for signal quality assessment and rejection.
+  enable: false
+  # Reject if max(|val|) exceeds this z-score threshold.
+  max_z_score: 8.0
+  # Reject if >30% of points have near-zero change.
+  flatline_ratio: 0.3
+  # Reject if NaN/Inf exists in waveform.
+  check_nan: true
+  # "force_nsr" sets AF probability to 0 for rejected samples; "ignore" keeps predictions.
+  action: "force_nsr"
+
+labels:
+  # BPM bins: [bpm_min, bpm_max] with bpm_step. Generates 106 bins for 30..240.
+  bpm_min: 30
+  bpm_max: 242
+  bpm_step: 2
+  # Gaussian sigma (in BPM units) for soft HR labels.
+  gaussian_sigma: 2.0
+  # AF classes are fixed binary one-hot labels [NSR, AF].
+  af_num_classes: 2
+
+aug:
+  # Enable data augmentation during training.
+  enable: true
+  # Gaussian noise N(0, sigma).
+  gaussian_prob: 0.5
+  gaussian_std: 0.01
+  # Time-domain masking (ratio of total length).
+  time_mask_prob: 0.5
+  time_mask_ratio: 0.1
+  # Frequency-domain masking (ratio of rFFT bins).
+  freq_mask_prob: 0.5
+  freq_mask_ratio: 0.1
+  # Random window shift for Simband AF-positive samples.
+  shift_prob: 0.5
+  shift_limit: 20
 
 model:
-  name: "TinyNet_V2.6.1"
-  dropout: 0.25
+  name: "TinyNet_V9_9_7_CNNBase"
+  # All channels must be multiples of 16.
+  stem_channels: 32
+  # Dual-stream AF backbone channels.
+  af_stream_channels: 64
+  hr_channels: 48
+  # Allowed kernel sizes are 3, 5, or 7.
+  hr_kernels: [7, 7, 7]
+  # Strides limited to 1 or 2.
+  hr_strides: [2, 1, 1]
+  # Dual-stream AF spatial blocks (3 stages).
+  af_spatial_kernels: [3, 3, 3]
+  af_spatial_strides: [2, 1, 1]
+  # Dual-stream AF temporal compression.
+  af_temporal_pool_kernels: [5, 4]
+  af_temporal_pool_strides: [5, 4]
+  # Dual-stream AF temporal blocks (2 stages).
+  af_temporal_kernels: [7, 7]
+  # Dual-stream AF temporal gating + global aggregation.
+  af_temporal_gate_kernel: 3
+  af_temporal_global_pool_kernel: 16
+  af_temporal_global_pool_stride: 1
+  # Head dimensions.
+  hr_head_conv_channels: 128
+  af_head_conv_channels: 128
+  af_output_dim: 1
+  # Dropout in ResBlock after first ReLU.
+  resblock_dropout: 0.5
+  # Optional dropout before AF classifier.
+  af_head_dropout: 0.75
+  # Optional dropout before HR classifier.
+  hr_head_dropout: 0.75
+  # Squeeze-Excitation reduction divisor (C -> ceil_divisible(C/4, 16)).
+  se_reduction_divisor: 4
 
-  backbone:
-    conv1:
-      out_channels: 16
-      kernel_size: 7
-      stride: 2
-      padding: 3
-    pool1:
-      kernel_size: 2
-      stride: 2
-    
-    conv2:
-      out_channels: 32
-      kernel_size: 5
-      stride: 1
-      padding: 2
-    pool2:
-      kernel_size: 1
-      stride: 1
-      
-    conv3:
-      out_channels: 64
-      kernel_size: 3
-      stride: 1
-      padding: 1
-    pool3:
-      kernel_size: 2
-      stride: 2
-      
-    conv4:
-      out_channels: 64
-      kernel_size: 3
-      stride: 1
-      padding: 1
-    pool4:
-      type: "avg"          # 最后使用平均池化
-      kernel_size: 4       # < 8 (硬件限制)
-      stride: 4
+training:
+  # Random seed for full training/eval reproducibility.
+  seed: 42
+  batch_size: 512
+  num_workers: 4
+  pin_memory: false
+  learning_rate: 0.012
+  weight_decay: 0.0005
+  epochs: 100
+  grad_clip_norm: 2.0
+  early_stop_patience: 20
+  # If split_json is unavailable, use this val ratio.
+  val_ratio: 0.2
 
-  # 房颤检测头 (Head A)
-  af_head:
-    output_dim: 16         # 硬件对齐：输出16路，取前2路有效
-    num_classes: 2         # NSR vs AF
+  sequential:
+    enable: true
+    start_stage: 1
+    stage1_epochs: 100
+    stage2_epochs: 80
+    stage3_epochs: 80
+    stage2_patience: 20
+    stage3_patience: 20
+    stage2_lr_scale: 0.5
+    stage3_lr_scale: 0.5
 
-  # 心率估计头 (Head B)
-  hr_head:
-    output_dim: 128        # 硬件限制：Softmax 128
-    min_bpm: 30
-    max_bpm: 210
+  scheduler:
+    type: "plateau"   # "plateau" or "step"
+    patience: 5
+    factor: 0.5
+    step_size: 10
+    gamma: 0.8
+
+  score_weights:
+    w_af: 0.4
+    w_mae: 0.3
+    w_rmse: 0.3
+    mae_norm: 15.0
+    rmse_norm: 25.0
+
+  sampler:
+    # Stage-wise oversampling weights (aligned with split_optimized.json).
+    task_af: 1.000
+    task_hr: 6.019
+    af_positive: 5.717
+    af_negative: 1.000
+    hr_low: 2.615
+    hr_mid: 1.000
+    hr_high: 2.838
+    hr_low_threshold: 75.0
+    hr_high_threshold: 120.0
+
+loss:
+  af_pos_weight: 1.0
+  hr_label_smoothing: 0.1
+  label_smoothing: 0.1
+
+evaluation:
+  mode: "all_data"        # "all_data" or "test_set"
+  checkpoint_path: "./checkpoints/stage1_best.pth"
+  result_dir: "./plots/evaluation_results"
+  # INT8 evaluation inputs/outputs.
+  int8_model_path: "./output/int8_model/model_quantized.pth"
+  int8_result_dir: "./output/visualizations"
+  infer_batch_size: 4096
+  default_af_threshold: 0.5
+  search_best_threshold: false
+  hr_outlier_threshold: 10.0
+  include_hr_as_af_negative: true
+  use_temporal_decoder: true
+  debug_stats: false
+  temporal_decoder:
+    search_window: 20
+    init_frames: 8
+    debounce_threshold: 5
+
+postprocessing:
+  enable: true
+  # Step 1: Smoothing
+  median_window: 7
+  # Step 2: Thresholding
+  fixed_threshold: 0.5
+  # Step 3: Pruning
+  min_duration_windows: 15
+
+device:
+  # Device preference order for runtime.
+  preference: ["cuda", "mps", "cpu"]
+
+quantization:
+  # Runtime training keeps fp32; deployment target is int8.
+  target_bit_width: 8
+  # "stratified_source" balances calibration samples across datasets.
+  calibration_strategy: "stratified_source"   # "stratified_source" | "sequential"
+  # Keep calibration distribution fixed for stable PTQ exports.
+  # Recommended to avoid test leakage: "train_set" (or "val_set").
+  calibration_mode: "train_set"   # "train_set" | "val_set" | "test_set" | "all_data" | "split"
+  # Used when calibration_mode == "split".
+  calibration_split: "train"
+  # Number of real windows used for post-training calibration.
+  calibration_samples: 512
+
+export:
+  # INT8 export folders.
+  int8_model_dir: "./output/int8_model"
+  hex_data_dir: "./output/hex_data"
+  visualizations_dir: "./output/visualizations"
+
+hardware:
+  platform: "CNN_Base_V1.0"
+  activation_bit_width: 8
+  max_feature_length: 8192
+  max_channels: 8192
+  channel_multiple: 16
+  softmax_max_features: 128
+  allowed_conv_kernels: [1, 3, 5, 7]
+  allowed_conv_strides: [1, 2]
+  allowed_conv_padding: [0, 1, 2, 3]
+  allowed_pool_kernels: [2, 3, 4, 5, 6, 7, 8]
+  allowed_pool_strides: [1, 2, 3, 4, 5, 6, 7]
+  allowed_pool_padding: [0, 1, 2, 3, 4, 5, 6, 7]

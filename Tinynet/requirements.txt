@@ -32,6 +32,6 @@ numba             # 加速部分预处理（可选但强烈推荐）
 # 图像处理（spectrogram 可用）
 Pillow
 
-# **重要**：你的工程里使用 pickle 保存，需要这个来保证结构兼容
 dill
 hydra-core
+optuna
