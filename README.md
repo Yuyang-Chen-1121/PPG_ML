@@ -55,7 +55,6 @@ TinyNet/
 │       ├── quant_export_utils.py    # FX hooks and hardware hex export utilities
 │       └── visualization.py         # Training visualization helper
 ├── split_optimized.json             # Train/val/test split + sampler weights
-├── Tinynet_Arch_V9.jpg              # Architecture figure used in this README
 ├── checkpoints/                     # Saved model checkpoints
 ├── output/                          # INT8 models, hex dumps, exported graphs
 └── plots/                           # Evaluation and diagnosis figures
