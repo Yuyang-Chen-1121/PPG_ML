@@ -4,7 +4,7 @@ TinyNet is a hardware-oriented multi-task 1D CNN for **atrial fibrillation (AF) 
 
 ## Model Architecture
 
-![TinyNet Architecture](Tinynet_Arch_V9.jpg)
+![TinyNet Architecture](TinyNet/Tinynet_Arch_V9.jpg)
 
 TinyNet uses a **shared stem + dual-branch head** design:
 
