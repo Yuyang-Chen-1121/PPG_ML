@@ -1,6 +1,6 @@
 # TinyNet
 
-TinyNet is a hardware-oriented multi-task deep learning neural network for **atrial fibrillation (AF) detection** and **heart-rate (HR) estimation** using PPG signals. The project supports computation acceleration for training and inference on Nvidia GPU (A100, L4, T4 are tested) and Apple M-series chip (M3 is tested).
+TinyNet is a hardware-oriented multi-task deep learning neural network for **atrial fibrillation (AF) detection** and **heart-rate (HR) estimation** using PPG signals. 
 
 ## Model Architecture
 
