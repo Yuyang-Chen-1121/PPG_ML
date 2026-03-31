@@ -8,7 +8,7 @@ TinyNet is a hardware-oriented multi-task deep learning neural network for **atr
 
 TinyNet uses a **shared stem + dual-branch head** design:
 
-- Input is a fixed window with shape `(C=16, L=320)`.
+- Input is a fixed window with shape `(C=16, L=320)`（to fit target platform, channel length can be reduced if using gpu）.
 - A shared stem (`Conv1d(7) + BN + ReLU`) extracts base features.
 - The network then splits into two task branches:
   - **HR branch (regression via distribution logits)**
